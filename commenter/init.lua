@@ -1,14 +1,15 @@
 local M = {}
 
+local comment_map = {
+	c = "// ",
+	cpp = "// ",
+	javascript = "// ",
+	typescript = "// ",
+	lua = "-- ",
+	java = "# "
+}
+
 M.toggle_signle_comment = function()
-	local comment_map = {
-		c = "// ",
-		cpp = "// ",
-		javascript = "// ",
-		typescript = "// ",
-		lua = "-- ",
-		java = "# "
-	}
 	local ft = vim.api.nvim_get_option_value("filetype", {buf = 0})
 	local current_line = vim.api.nvim_get_current_line()
 
@@ -56,6 +57,20 @@ M.toggle_signle_comment = function()
 
 	local new_current_line = fill_indent .. prefix .. trim_current_line
 	vim.api.nvim_set_current_line(new_current_line)
+end
+
+M.toggle_multiple_comment = function()
+	local win_id = vim.api.nvim_win_get_buf(0)
+	local buf = vim.api.nvim_win_get_buf(0)
+	-- print("buf_line_count: ", vim.api.nvim_buf_line_count(buf))
+	local start_line = vim.fn.getpos('v')[2]
+	local end_line = vim.fn.getpos('.')[2]
+	local lines = vim.api.nvim_buf_get_lines(buf, start_line - 1, end_line, false)
+	print("===")
+	for i=start_line, end_line
+	do
+		print(lines[i])
+	end
 end
 
 return M
