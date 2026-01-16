@@ -9,10 +9,8 @@ local comment_map = {
 	java = "# "
 }
 
-M.toggle_signle_comment = function()
-	local ft = vim.api.nvim_get_option_value("filetype", {buf = 0})
-	local current_line = vim.api.nvim_get_current_line()
-
+local comment_editor = function(ft, current_line)
+	print("current line " .. current_line)
 	local indent_length = 1
 	-- count indent length
 	while true 
@@ -29,7 +27,7 @@ M.toggle_signle_comment = function()
 	local prefix = comment_map[ft]
 	if prefix == nil
 	then
-		return nil
+		return current_line
 	end
 
 	-- remove space
@@ -56,21 +54,54 @@ M.toggle_signle_comment = function()
 	end
 
 	local new_current_line = fill_indent .. prefix .. trim_current_line
+	return new_current_line
+end
+
+local selection = function()
+	local start_pos = vim.fn.getpos('v')
+	local end_pos = vim.fn.getpos('.')
+
+	local start_line = start_pos[2] - 1
+	local end_line = end_pos[2]
+	print("inside" .. start_line .. end_line)
+	if end_line < start_line
+	then
+		return end_line - 1, start_line + 1
+	end
+	return start_line, end_line
+end
+
+local move_to_right = function(ft)
+	vim.api.nvim_win_set_cursor(0, {vim.fn.getpos('.')[2], #comment_map[ft]})
+end
+
+M.toggle_signle_comment = function()
+	local ft = vim.api.nvim_get_option_value("filetype", {buf = 0})
+	local current_line = vim.api.nvim_get_current_line()
+
+	local new_current_line = comment_editor(ft, current_line)
 	vim.api.nvim_set_current_line(new_current_line)
+	move_to_right(ft)
 end
 
 M.toggle_multiple_comment = function()
-	local win_id = vim.api.nvim_win_get_buf(0)
-	local buf = vim.api.nvim_win_get_buf(0)
-	-- print("buf_line_count: ", vim.api.nvim_buf_line_count(buf))
-	local start_line = vim.fn.getpos('v')[2]
-	local end_line = vim.fn.getpos('.')[2]
-	local lines = vim.api.nvim_buf_get_lines(buf, start_line - 1, end_line, false)
-	print("===")
-	for i=start_line, end_line
+	local ft = vim.api.nvim_get_option_value("filetype", {buf = 0})
+	local start_line, end_line = selection()
+	local lines = vim.api.nvim_buf_get_lines(0, start_line, end_line, false)
+	local buffer = {}
+
+	-- loop each lines
+	for i=1, #lines
 	do
-		print(lines[i])
+		local new_current_line = comment_editor(ft, lines[i])
+		table.insert(buffer, new_current_line)
 	end
+	vim.api.nvim_buf_set_lines(0, start_line, end_line, false, buffer)
+	
+	-- change to normal mode after comment
+	local esc = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+	vim.api.nvim_feedkeys(esc, "n", false)
+	move_to_right(ft)
 end
 
 return M
