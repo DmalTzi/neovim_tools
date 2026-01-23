@@ -6,11 +6,11 @@ local comment_map = {
 	javascript = "// ",
 	typescript = "// ",
 	lua = "-- ",
-	java = "# "
+	java = "# ",
+	sh = "# "
 }
 
 local comment_editor = function(ft, current_line)
-	print("current line " .. current_line)
 	local indent_length = 1
 	-- count indent length
 	while true 
@@ -42,7 +42,6 @@ local comment_editor = function(ft, current_line)
 	then
 		prefix = ""
 		trim_current_line = string.sub(trim_current_line, prefix_length + 1, -1)
-		print(trim_current_line)
 	end
 
 	-- is this line have indent? if it have adding the indent
@@ -63,7 +62,6 @@ local selection = function()
 
 	local start_line = start_pos[2] - 1
 	local end_line = end_pos[2]
-	print("inside" .. start_line .. end_line)
 	if end_line < start_line
 	then
 		return end_line - 1, start_line + 1
