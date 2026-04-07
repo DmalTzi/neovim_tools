@@ -10,6 +10,16 @@ local comment_map = {
 	sh = "# "
 }
 
+local get_comment_map = function(ft)
+	local prefix = comment_map[ft]
+	if prefix == nil
+	then
+		print("use default comment prefix!!")
+		return "# "
+	end
+	return prefix
+end
+
 local comment_editor = function(ft, current_line)
 	local indent_length = 1
 	-- count indent length
@@ -24,11 +34,7 @@ local comment_editor = function(ft, current_line)
 	end
 
 	-- If it not have file type not thing to do
-	local prefix = comment_map[ft]
-	if prefix == nil
-	then
-		return current_line
-	end
+	local prefix = get_comment_map(ft)
 
 	-- remove space
 	local trim_current_line = (current_line:gsub("^%s*(.-)%s*$", "%1"))
@@ -70,7 +76,7 @@ local selection = function()
 end
 
 local move_to_right = function(ft)
-	vim.api.nvim_win_set_cursor(0, {vim.fn.getpos('.')[2], #comment_map[ft]})
+	vim.api.nvim_win_set_cursor(0, {vim.fn.getpos('.')[2], #get_comment_map(ft)})
 end
 
 M.toggle_signle_comment = function()
